@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_login_userinterface/common/theme_helper.dart';
+import 'package:flutter_login_userinterface/pages/login_page.dart';
 
 class RegistrationPage extends StatefulWidget{
   @override
@@ -10,6 +12,8 @@ class RegistrationPage extends StatefulWidget{
 }
 
 class _RegistrationPageState extends State<RegistrationPage>{
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   final Key _formKey = GlobalKey<FormState>();
   bool checkedValue = false;
@@ -51,6 +55,7 @@ class _RegistrationPageState extends State<RegistrationPage>{
                        SizedBox(height: 20.0),
                        Container(
                          child: TextFormField(
+                           controller: emailController,
                            decoration: ThemeHelper().textInputDecoration('Email Address', "Masukkan email"),
                            keyboardType: TextInputType.emailAddress,
                          ),
@@ -86,6 +91,7 @@ class _RegistrationPageState extends State<RegistrationPage>{
                        SizedBox(height: 20.0),
                        Container(
                          child: TextFormField(
+                           controller: passwordController,
                            obscureText: true,
                            decoration: ThemeHelper().textInputDecoration('Password', "Enter your password"),
                            validator: (val){
@@ -128,6 +134,14 @@ class _RegistrationPageState extends State<RegistrationPage>{
                                ),
                              ),
                              onPressed: () {
+                               FirebaseAuth.instance.createUserWithEmailAndPassword(email: emailController.text, password: passwordController.text).then((value)  {
+                               print("Created New Account");
+                               Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+
+                               }).onError((error, stackTrace) {
+                                 print("Error ${error.toString()}");
+                               });
+
 
                              },
                            )

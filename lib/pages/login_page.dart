@@ -1,8 +1,12 @@
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_login_userinterface/common/theme_helper.dart';
+import 'package:flutter_login_userinterface/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_login_userinterface/pages/home_page.dart';
+
 
 import 'registration_page.dart';
 
@@ -14,6 +18,21 @@ class LoginPage extends StatefulWidget{
 }
 
 class _LoginPageState extends State<LoginPage>{
+  final Username = new TextEditingController();
+  final Password = new TextEditingController();
+
+  saveData() async{
+    final localStorage = await SharedPreferences.getInstance();
+    localStorage.setString("namaUser", Username.text.toString());
+    localStorage.setString("PassUser", Password.text.toString());
+
+    if(Username.text == "" && Password.text == ""){
+      print("Tidak Bisa Masuk");
+    } else {
+
+    }
+  }
+
   double _headerHeight = 250;
   Key _formKey = GlobalKey<FormState>();
 
@@ -48,10 +67,12 @@ class _LoginPageState extends State<LoginPage>{
                         child: Column(
                              children: [
                                TextField(
-                                 decoration: ThemeHelper().textInputDecoration('User Name', 'Masukkan User Name'),
+                                 controller : Username,
+                                 decoration: ThemeHelper().textInputDecoration('Username', 'Masukkan Username'),
                                ),
                                SizedBox(height: 20.0),
                                TextField(
+                                 controller: Password,
                                  obscureText: true,
                                  decoration: ThemeHelper().textInputDecoration('Password', 'Masukkan Password'),
                                ),
@@ -70,6 +91,13 @@ class _LoginPageState extends State<LoginPage>{
                                      ),
                                    ),
                                    onPressed: () {
+                                     FirebaseAuth.instance.signInWithEmailAndPassword(email: Username.text, password: Password.text).then((value) {
+
+                                       Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                                     }).onError((error, stackTrace) {
+                                       print("Error ${error.toString()}");
+                                     });
+
 
                                    },
                                  )
