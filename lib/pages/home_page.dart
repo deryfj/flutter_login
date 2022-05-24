@@ -1,140 +1,234 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_login_userinterface/pages/login_page.dart';
+import 'package:flutter_login_userinterface/pages/header_drawer.dart';
+import 'package:flutter_login_userinterface/pages/chat_page.dart';
+import 'package:flutter_login_userinterface/pages/profile.dart';
+import 'package:flutter_login_userinterface/pages/todo.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
-  _HomePageState createState() => _HomePageState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Home Page',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const MyHomePage(title: "Home Page"),
+    );
+  }
 }
 
-class _HomePageState extends State<HomePage> {
-  List todos = List.empty();
-  String title = "";
-  String description = "";
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key, required this.title}) : super(key: key);
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    todos = ["Hello", "Hey There"];
-  }
 
-  createTodo(){
-    DocumentReference documentReference = FirebaseFirestore.instance.collection("MyTodos").doc(title);
-
-    Map<String, String> todoList = {
-      "todoTitle": title,
-      "todoDesc": description
-    };
-    documentReference.set(todoList).whenComplete(() => print("Data stored successfully"));
-  }
-
-  deleteTodo(item) {
-
-    DocumentReference documentReference = FirebaseFirestore.instance.collection("MyTodos").doc(item);
-
-    documentReference.delete().whenComplete(() => print("Deleted Success"));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.purpleAccent,
+        title: const Text("Lokal Apps"),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection("MyTodos").snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Text("Something went wrong");
-          } else if (snapshot.hasData || snapshot.data != null) {
-            return ListView.builder(
-                shrinkWrap: true,
-                itemCount: snapshot.data?.docs.length,
-                itemBuilder: (BuildContext context, int index) {
-                  QueryDocumentSnapshot?documentSnapshot = snapshot.data?.docs[index];
-                  return Dismissible(
-                      key: Key(index.toString()),
-                      child: Card(
-                        elevation: 4,
-                        child: ListTile(
-                          title: Text((documentSnapshot != null) ? (documentSnapshot["todoTitle"]) :""),
-                          subtitle: Text((documentSnapshot != null)
-                              ? ((documentSnapshot["todoDesc"] != null)
-                              ? documentSnapshot["todoDesc"]
-                              : "")
-                              :""),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete),
-                            color: Colors.red,
-                            onPressed: () {
-                              setState(() {
-                                //todos.removeAt(index);
-                                deleteTodo((documentSnapshot != null) ? (documentSnapshot["todoTitle"]) :"");
-                              });
-                            },
-                          ),
-                        ),
-                      ));
-                });
-          }
+      drawer: Drawer(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const MyHeaderDrawer(),
+              ListTile(
+                leading: const Icon(Icons.home),
+                title: Text("Home"),
+                onTap: () {Navigator.pop(context);},
+              ),
+              ListTile(
+                leading: const Icon(Icons.message_sharp),
+                title: Text("Messages"),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatPage()));
+                  },
+              ),
+              ListTile(
+                leading: const Icon(Icons.today_outlined),
+                title: Text("Todo"),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const TodoPage()));
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.person),
+                title: Text("Profil"),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const Profile()));
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: Text("Logout"),
+                onTap: () {
+                  FirebaseAuth.instance.signOut().then((value) {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+                  });
+                },
+              ),
 
-          return const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Colors.red,
+            ],
+          ),
+        ),
+      ),
+      body: GridView.count(
+        padding: const EdgeInsets.all(25),
+        crossAxisCount: 2,
+        children: <Widget>[
+          Card(
+            margin: const EdgeInsets.all(8),
+            child: InkWell(
+              onTap: () {},
+              splashColor: Colors.blue,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const <Widget>[
+                    Icon(Icons.home, size: 70, color: Colors.blue,),
+                    Text("Home", style: TextStyle(fontSize: 17.0)),
+                  ],
+                ),
               ),
             ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  title: const Text("Add Todo"),
-                  content: Container(
-                    width: 600,
-                    height: 200,
-                    child: Column(
-                      children: [
-                        TextField(
-                          onChanged: (String value) {
-                            title = value;
-                          },
-                        ),
-                        TextField(
-                          onChanged: (String value) {
-                            description = value;
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  actions:<Widget> [
-                    TextButton(
-                        onPressed: () {
-                          setState(() {
-                            //todos.add(title);
-                            //todos.add(description);
-                            createTodo();
-                          });
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("Add"))
+          ),
+          Card(
+            margin: const EdgeInsets.all(8),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatPage()));
+              },
+              splashColor: Colors.blue,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const <Widget>[
+                    Icon(Icons.message_sharp, size: 70, color: Colors.blue,),
+                    Text("Messages", style: TextStyle(fontSize: 17.0)),
                   ],
-                );
-              });
-        },
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
-        ),
+                ),
+              ),
+            ),
+          ),
+          Card(
+            margin: const EdgeInsets.all(8),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const TodoPage()));
+              },
+              splashColor: Colors.blue,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const <Widget>[
+                    Icon(Icons.today_outlined, size: 70, color: Colors.blue,),
+                    Text("Todo", style: TextStyle(fontSize: 17.0)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Card(
+            margin: const EdgeInsets.all(8),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const Profile()));
+              },
+              splashColor: Colors.blue,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const <Widget>[
+                    Icon(Icons.person, size: 70, color: Colors.blue,),
+                    Text("Profil", style: TextStyle(fontSize: 17.0)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Card(
+            margin: const EdgeInsets.all(8),
+            child: InkWell(
+              onTap: () {},
+              splashColor: Colors.blue,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const <Widget>[
+                    Icon(Icons.home, size: 70, color: Colors.blue,),
+                    Text("Home", style: TextStyle(fontSize: 17.0)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Card(
+            margin: const EdgeInsets.all(8),
+            child: InkWell(
+              onTap: () {},
+              splashColor: Colors.blue,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const <Widget>[
+                    Icon(Icons.home, size: 70, color: Colors.blue,),
+                    Text("Home", style: TextStyle(fontSize: 17.0)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Card(
+            margin: const EdgeInsets.all(8),
+            child: InkWell(
+              onTap: () {},
+              splashColor: Colors.blue,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const <Widget>[
+                    Icon(Icons.home, size: 70, color: Colors.blue,),
+                    Text("Home", style: TextStyle(fontSize: 17.0)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Card(
+            margin: const EdgeInsets.all(8),
+            child: InkWell(
+              onTap: () {},
+              splashColor: Colors.blue,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const <Widget>[
+                    Icon(Icons.home, size: 70, color: Colors.blue,),
+                    Text("Home", style: TextStyle(fontSize: 17.0)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

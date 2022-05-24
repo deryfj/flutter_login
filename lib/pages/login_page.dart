@@ -4,10 +4,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_login_userinterface/common/theme_helper.dart';
 import 'package:flutter_login_userinterface/main.dart';
+import 'package:flutter_login_userinterface/pages/reset.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_login_userinterface/pages/home_page.dart';
-
-
 import 'registration_page.dart';
 
 class LoginPage extends StatefulWidget{
@@ -50,12 +49,12 @@ class _LoginPageState extends State<LoginPage>{
             SafeArea(
               child: Container( //akan menjadi form login
                 padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                margin: EdgeInsets.fromLTRB(20, 10, 20, 10),
                 child: Column(
                   children: [
                     Text(
-                        'Hello',
-                        style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                      'Hello',
+                      style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       'Selamat Datang',
@@ -63,73 +62,90 @@ class _LoginPageState extends State<LoginPage>{
                     ),
                     SizedBox(height: 20.0),
                     Form(
-                      key: _formKey,
+                        key: _formKey,
                         child: Column(
-                             children: [
-                               TextField(
-                                 controller : Username,
-                                 decoration: ThemeHelper().textInputDecoration('Username', 'Masukkan Username'),
-                               ),
-                               SizedBox(height: 20.0),
-                               TextField(
-                                 controller: Password,
-                                 obscureText: true,
-                                 decoration: ThemeHelper().textInputDecoration('Password', 'Masukkan Password'),
-                               ),
-                               SizedBox(height: 10.0),
-                               Container(
-                                 alignment: Alignment.topRight,
-                                 child: Text('Lupa Password'),
-                               ),
-                               Container(
-                                 decoration: ThemeHelper().buttonBoxDecoration(context),
-                                 child: ElevatedButton(
-                                   style: ThemeHelper().buttonStyle(),
-                                   child: Padding(
-                                     padding: EdgeInsets.fromLTRB(5, 2, 5, 2),
-                                     child: Text('Masuk'.toUpperCase(), style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color:Colors.white),
-                                     ),
-                                   ),
-                                   onPressed: () {
-                                     FirebaseAuth.instance.signInWithEmailAndPassword(email: Username.text, password: Password.text).then((value) {
+                          children: [
+                            TextField(
+                              controller : Username,
+                              decoration: InputDecoration(
+                                hintText: ('Email'),
+                              ),
+                            ),
+                            SizedBox(height: 20.0),
+                            TextField(
+                              controller: Password,
+                              obscureText: true,
+                              decoration: InputDecoration(
+                                hintText: ('Password'),
+                              ),
+                            ),
+                            SizedBox(height: 10.0),
+                            Container(
+                              alignment: Alignment.topRight,
+                              child: Text.rich(
+                                TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: 'Lupa Password?',
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = (){
+                                            Navigator.push(context, MaterialPageRoute(builder: (context) => ResetPassword()));
+                                          },
+                                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54),
+                                      ),
+                                    ]
+                                ),
+                              ),
+                            ),
+                            Container(
+                                decoration: ThemeHelper().buttonBoxDecoration(context),
+                                child: ElevatedButton(
+                                  style: ThemeHelper().buttonStyle(),
+                                  child: Padding(
+                                    padding: EdgeInsets.fromLTRB(5, 2, 5, 2),
+                                    child: Text('Masuk'.toUpperCase(), style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color:Colors.white),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    FirebaseAuth.instance.signInWithEmailAndPassword(email: Username.text, password: Password.text).then((value) {
 
-                                       Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
-                                     }).onError((error, stackTrace) {
-                                       print("Error ${error.toString()}");
-                                     });
+                                      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+                                    }).onError((error, stackTrace) {
+                                      print("Error ${error.toString()}");
+                                    });
 
 
-                                   },
-                                 ),
+                                  },
+                                ),
 
-                               ),
-                               Container(
-                                 margin: EdgeInsets.fromLTRB(5, 5, 5, 5),
-                                 alignment: Alignment.bottomRight,
-                                 //child: Text('Tidak punya akun? Buat'), // Membuat style pendukung pada form
-                                 child: Text.rich(
-                                   TextSpan(
-                                     children: [
-                                       TextSpan(text: "Tidak Punya akun?"),
-                                       TextSpan(
-                                         text: 'Buat',
-                                         recognizer: TapGestureRecognizer()
-                                           ..onTap = (){
-                                           Navigator.push(context, MaterialPageRoute(builder: (context) => RegistrationPage()));
-                                           },
-                                         style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).accentColor),
-                                       ),
-                                     ]
-                                   )
-                                 ),
-                               ),
-                             ],
-                        )
+                            ),
+                            Container(
+                              margin: EdgeInsets.fromLTRB(5, 5, 5, 5),
+                              alignment: Alignment.bottomRight,
+                              //child: Text('Tidak punya akun? Buat'), // Membuat style pendukung pada form
+                              child: Text.rich(
+                                  TextSpan(
+                                      children: [
+                                        TextSpan(text: "Tidak Punya akun?"),
+                                        TextSpan(
+                                          text: 'Buat',
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = (){
+                                              Navigator.push(context, MaterialPageRoute(builder: (context) => RegistrationPage()));
+                                            },
+                                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.lightBlueAccent),
+                                        ),
+                                      ]
+                                  ),
+                              ),
+                            ),
+                          ],
+                        ),
                     ),
                   ],
                 ),
 
-            ),
+              ),
             ),
           ],
         ),
